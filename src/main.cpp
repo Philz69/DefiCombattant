@@ -91,7 +91,6 @@ void setup()
 void loop()
 {
   // put your main code here, to run repeatedly:
-
   if (ROBUS_IsBumper(3))
   {
     int angleInitial = ANGLE_INITIAL_ROBOT_B;
@@ -166,15 +165,15 @@ void loop()
       float distanceBallon = TrouverBallon(&angleTrouverBallon);
 
       //3. Avancer jusquau centre
-      //facteurAcceleration = 0.1; //Descendre la vitesse du premier mouvement
-      //Mouvement(distanceBallon - 5);
+      facteurAcceleration = 0.1; //Descendre la vitesse du premier mouvement
+      Mouvement(distanceBallon - 5);
 
-      ////3. Monter les fourches
-      //SERVO_SetAngle(0, 120);
-      //delay(1000);
+      //3. Monter les fourches
+      SERVO_SetAngle(0, 120);
+      delay(1000);
 
-      //Serial.println("angleTrouverBallon");
-      //Serial.println(angleTrouverBallon);
+      Serial.println("angleTrouverBallon");
+      Serial.println(angleTrouverBallon);
 
       //Corrige son angle du TrouverBallon
       /*if(angleTrouverBallon > 45)
@@ -259,14 +258,14 @@ int TrouverBallon(int *angleTourne)
   double distanceGauche;
   double distanceDroite;
   int distanceMinimum = 60;
-  int pause = 2000;
+  int pause = 1;
   offsetGauche = (Tourner(-1, 45) / (59.3761011528 * 133.6734467)) * 360.0;
   delay(pause);
 
-  Serial.println("GAUCHE : ");
-  Serial.println(LireDistance(LEFT));
-  Serial.println("DROITE : ");
-  Serial.println(LireDistance(RIGHT));
+  //Serial.println("GAUCHE : ");
+  //Serial.println(LireDistance(LEFT));
+  //Serial.println("DROITE : ");
+  //Serial.println(LireDistance(RIGHT));
 
   vitesseTourner = 0.1;
 
@@ -291,117 +290,87 @@ int TrouverBallon(int *angleTourne)
   while (true)
   {
     distanceGauche = LireDistance(LEFT);
-    if (isnan(distanceGauche) || (derniereDistance > distanceMinimum))// || ((derniereDistance > distanceMinimum) && ((derniereDistance - distanceGauche) < 5)))
+     Serial.println(millis());
+    if (!isnan(distanceGauche) && !(distanceGauche > distanceMinimum)) // || ((derniereDistance > distanceMinimum) && ((derniereDistance - distanceGauche) < 5)))
     {
-
-      if (isnan(distanceGauche))
-      {
-        derniereDistance = 90;
-      }
-      else
-      {
-        derniereDistance = (distanceGauche);
-      }
-
-      Serial.print(derniereDistance);
-      Serial.print(" | ");
-      Serial.print(distanceGauche);
-      Serial.print(((derniereDistance > distanceMinimum) && ((derniereDistance - distanceDroite) < 5)));
-      Serial.println();
-    }
-    else 
-    {
+      //if (isnan(distanceGauche))
+      //{
+      //  derniereDistance = 90;
+      //}
+      //else
+      //{
+      //  derniereDistance = (distanceGauche);
+      //}
+      MOTOR_SetSpeed(LEFT, 0);
+      MOTOR_SetSpeed(RIGHT, 0);
       break;
+      Serial.print("Gauche: "); Serial.println(distanceGauche);
     }
-    delay(5);
+    else
+    {
+      //Serial.print("A trouvé coté gauche |");
+      //Serial.print(distanceGauche);
+      //MOTOR_SetSpeed(LEFT, 0);
+      //MOTOR_SetSpeed(RIGHT, 0);
+      //break;
+    }
   }
-  //Serial.print(derniereDistance);
-  //Serial.print(" | ");
-  //Serial.print(distanceGauche);
-  Serial.println("Coté gauche trouvé");
-  MOTOR_SetSpeed(LEFT, 0);
-  MOTOR_SetSpeed(RIGHT, 0);
+  Serial.println(millis());
   angleGauche = (ENCODER_Read(LEFT) / (59.3761011528 * 133.6734467)) * 360.0;
 
-  delay(pause);
-  //offsetDroit = (Tourner(1, 20) / (59.3761011528 * 133.6734467)) * 360.0;
+  delay(1000);
   offsetDroit = Tourner(1, 20);
   delay(pause);
 
   ENCODER_ReadReset(LEFT);
   ENCODER_ReadReset(RIGHT);
   derniereDistance = LireDistance(RIGHT);
-  //Serial.println(derniereDistance);
   MOTOR_SetSpeed(LEFT, -vitesseTourner);
   MOTOR_SetSpeed(RIGHT, vitesseTourner);
   distanceDroite = LireDistance(RIGHT);
   while (true)
   {
     distanceDroite = LireDistance(RIGHT);
-    if (isnan(distanceDroite) || (derniereDistance > distanceMinimum)) //|| ((derniereDistance > distanceMinimum) && ((derniereDistance - distanceDroite) < 5)))
+    if (isnan(distanceDroite) || (distanceDroite > distanceMinimum)) //|| ((derniereDistance > distanceMinimum) && ((derniereDistance - distanceDroite) < 5)))
     {
-
-      if (isnan(distanceDroite))
-      {
-        derniereDistance = 90;
-      }
-      else
-      {
-        derniereDistance = (distanceDroite);
-      }
-
-      //Serial.print(derniereDistance);
-      //Serial.print(" | ");
-      //Serial.print(distanceDroite);
-      //Serial.print(" | ");
-      //Serial.print(((derniereDistance > distanceMinimum) && ((derniereDistance - distanceDroite) < 5)));
-      //Serial.print(" | ");
-      //Serial.print(derniereDistance > distanceMinimum);
-      //Serial.print((derniereDistance - distanceDroite) < 5);
-      //Serial.println();
+      //if (isnan(distanceDroite))
+      //{
+      //  derniereDistance = 90;
+      //}
+      //else
+      //{
+      //  derniereDistance = (distanceDroite);
+      //}
+      Serial.print("Droite : "); Serial.println(distanceDroite);
     }
-    else 
+    else
     {
-      Serial.println("A trouver coter droit");
+      Serial.print("A trouver coter droit |");
+      Serial.println(distanceDroite);
+      Serial.println(millis());
+      MOTOR_SetSpeed(LEFT, 0);
+      MOTOR_SetSpeed(RIGHT, 0);
       break;
     }
-    delay(5);
   }
-  //Serial.print(derniereDistance);
-  //Serial.print(" | ");
-  //Serial.print(distanceDroite);
-  MOTOR_SetSpeed(LEFT, 0);
-  MOTOR_SetSpeed(RIGHT, 0);
+  Serial.println(millis());
   delay(pause);
   //angleDroit = ((ENCODER_Read(RIGHT) / (59.3761011528 * 133.6734467)) * 360.0);
-  angleDroit = ENCODER_Read(RIGHT) ;
-  Serial.println(offsetDroit - angleDroit);
+  angleDroit = ENCODER_Read(RIGHT);
   delay(1000);
   ENCODER_ReadReset(RIGHT);
   MOTOR_SetSpeed(LEFT, -vitesseTourner);
   MOTOR_SetSpeed(RIGHT, vitesseTourner);
-  while(ENCODER_Read(RIGHT) < fabs((offsetDroit - angleDroit)))
+  while (ENCODER_Read(RIGHT) < fabs((offsetDroit - angleDroit)))
   {
   }
   MOTOR_SetSpeed(LEFT, 0);
   MOTOR_SetSpeed(RIGHT, 0);
-  //Tourner(-1, (offsetDroit - angleDroit)/2.0);
-  //Serial.print(offsetDroit); Serial.print(" - "); Serial.print(angleDroit); Serial.print(" - "); Serial.print(offsetDroit - angleDroit);
   delay(1000);
-
-  //Serial.print(distanceGauche);
-  //Serial.print(" | ");
-  //Serial.print(distanceDroite);
-  //Serial.print(" | ");
-  //Serial.print((distanceGauche + distanceDroite) / 2);
-  //Serial.print(LireDistance(LEFT));
-  //Serial.print(" | ");
-  //Serial.print(LireDistance(RIGHT));
-  //Serial.println("angleTotal"); Serial.println(angleTotal);
 
   *angleTourne = angleTotal;
 
-  //return (LireDistance(LEFT) + LireDistance(RIGHT)) / 2.0;
+  Serial.println((distanceGauche + distanceDroite) / 2.0);
   return ((distanceGauche + distanceDroite) / 2.0);
 }
 
