@@ -7,7 +7,7 @@
 // bool ROBUS_IsBumper(uint8_t id);
 // int32_t ENCODER_Read(uint8_t id);
 
-int CalculerAngleDepart(int *sensAngle, int AngleInitial, int couleur);
+float CalculerAngleDepart(int *sensAngle, int AngleInitial, int couleur);
 float LireDistance(int capteur);
 int TrouverBallon(int *nmbPulseTourne);
 
@@ -33,8 +33,8 @@ float FonctionPID(float distMotDroite, float distMotGauche);
 #define NOIR 4
 
 #define ANGLE_ROUGE 45
-#define ANGLE_VERT 135
-#define ANGLE_BLEU 225
+#define ANGLE_VERT 130.5
+#define ANGLE_BLEU 222
 #define ANGLE_JAUNE 315
 
 #define redpin 3
@@ -43,7 +43,7 @@ float FonctionPID(float distMotDroite, float distMotGauche);
 
 #define commonAnode true
 
-int TableauAnglesCouleurs[4] = {ANGLE_ROUGE, ANGLE_VERT, ANGLE_BLEU, ANGLE_JAUNE};
+float TableauAnglesCouleurs[4] = {ANGLE_ROUGE, ANGLE_VERT, ANGLE_BLEU, ANGLE_JAUNE};
 int lireCouleur();
 float lireDistance();
 Adafruit_TCS34725 tcs = Adafruit_TCS34725(TCS34725_INTEGRATIONTIME_50MS, TCS34725_GAIN_4X);
@@ -94,7 +94,7 @@ void loop()
   // put your main code here, to run repeatedly:
   if (ROBUS_IsBumper(3))
   {
-    int angleInitial = ANGLE_INITIAL_ROBOT_B;
+    int angleInitial = ANGLE_INITIAL_ROBOT_A;
     int couleurAAtteindre = ROUGE;
     int couleur2 = JAUNE;
     if (angleInitial == ANGLE_INITIAL_ROBOT_A)
@@ -122,6 +122,10 @@ void loop()
 
       //6. Se rendre jusquau ballon
       facteurAcceleration = 0.2;
+      if(couleurAAtteindre == VERT)
+      {
+        Mouvement(3);
+      }
       Mouvement(20);
 
       //7. Monter les fourches
@@ -142,7 +146,7 @@ void loop()
       //11.
       MOTOR_SetSpeed(0, -0.3);
       MOTOR_SetSpeed(1, -0.3);
-      delay(1500);
+      delay(1750);
       MOTOR_SetSpeed(0, 0);
       MOTOR_SetSpeed(1, 0);
 
@@ -392,9 +396,9 @@ int trouverCoteBallon(int cote, int *nmbPulses, double *distanceMinimum, double 
   return distanceBallon;
 }
 //Calcule l'angle le plus court que peut faire le robot en fonction de son angle initial et de la couleur qu'il veut atteindre
-int CalculerAngleDepart(int *sensAngle, int angleInitial, int couleur)
+float CalculerAngleDepart(int *sensAngle, int angleInitial, int couleur)
 {
-  int angle = TableauAnglesCouleurs[couleur] - angleInitial;
+  float angle = TableauAnglesCouleurs[couleur] - angleInitial;
   *sensAngle = 1;
 
   if (angle < 0)
