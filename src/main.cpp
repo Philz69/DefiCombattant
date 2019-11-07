@@ -9,7 +9,7 @@
 
 int CalculerAngleDepart(int *sensAngle, int AngleInitial, int couleur);
 float LireDistance(int capteur);
-int TrouverBallon(int *angleTourne);
+int TrouverBallon(int *nmbPulseTourne);
 
 void defiParcours();
 
@@ -97,7 +97,6 @@ void loop()
     int angleInitial = ANGLE_INITIAL_ROBOT_B;
     int couleurAAtteindre = ROUGE;
     int couleur2 = JAUNE;
-
     if (angleInitial == ANGLE_INITIAL_ROBOT_A)
     {
       //1. Monter les fourches
@@ -176,17 +175,35 @@ void loop()
       Serial.println(angleTrouverBallon);
 
       //Corrige son angle du TrouverBallon
-      /*if(angleTrouverBallon > 45)
-      {
-        Tourner(-1, angleTrouverBallon - 45);
-      }
-      else if (angleTrouverBallon <= 45) //else if(angleTrouverBallon <= 45)
-      {
-        Tourner(1, 45 - angleTrouverBallon);
-      }
-      delay(500);*/
-      /*
+      //if(angleTrouverBallon > 45)
+      //{
+      //  Tourner(-1, angleTrouverBallon - 45);
+      //}
+      //else if (angleTrouverBallon <= 45) //else if(angleTrouverBallon <= 45)
+      //{
+      //  Tourner(1, 45 - angleTrouverBallon);
+      //}
+      //delay(500);
+
       //4. Tourner dans la bonne direction
+      ENCODER_ReadReset(RIGHT);
+      if (angleTrouverBallon < 0)
+      {
+        MOTOR_SetSpeed(LEFT, vitesseTourner);
+        MOTOR_SetSpeed(RIGHT, -vitesseTourner);
+      }
+      else
+      {
+        MOTOR_SetSpeed(LEFT, -vitesseTourner);
+        MOTOR_SetSpeed(RIGHT, vitesseTourner);
+      }
+      while (fabs(ENCODER_Read(RIGHT)) < fabs(angleTrouverBallon) / 2);
+      {
+      }
+      MOTOR_SetSpeed(LEFT, 0);
+      MOTOR_SetSpeed(RIGHT, 0);
+      delay(2000);
+
       int sensAngleDepart = 1;
       int angleDepart = CalculerAngleDepart(&sensAngleDepart, angleInitial, couleur2);
       Tourner(sensAngleDepart, angleDepart);
@@ -197,7 +214,7 @@ void loop()
 
       //3. dROP les fourches
       SERVO_SetAngle(0, 0);
-      delay(1000);*/
+      delay(1000);
     }
   }
   // if(ROBUS_IsBumper(2))
@@ -247,7 +264,7 @@ void loop()
   // }
 }
 
-int TrouverBallon(int *angleTourne)
+int TrouverBallon(int *nmbPulseTourne)
 {
   int angleTotal = 0;
   int derniereDistance = 0;
@@ -266,12 +283,12 @@ int TrouverBallon(int *angleTourne)
   vitesseTourner = 0.15;
 
   Serial.println("DEVRAIT TOURNER A GAUCHE");
-  Tourner(-1,45);
+  offsetGauche = Tourner(-1, 45);
   delay(pause);
   Serial.println("DEVRAIT TOURNER A DROITE");
   Serial.println(millis());
   Serial.println(trouverCoteBallon(LEFT, &angleGauche, &distanceMinimum, distanceMinimumDetection));
-  if(LireDistance(LEFT) < distanceMinimum)
+  if (LireDistance(LEFT) < distanceMinimum)
   {
     distanceMinimum = LireDistance(LEFT);
   }
@@ -282,34 +299,41 @@ int TrouverBallon(int *angleTourne)
   delay(pause);
   Serial.println("DEVRAIT TOURNER A GAUCHE");
   Serial.println(trouverCoteBallon(RIGHT, &angleDroit, &distanceMinimum, distanceMinimumDetection));
-  if(LireDistance(RIGHT) < distanceMinimum)
+  if (LireDistance(RIGHT) < distanceMinimum)
   {
     distanceMinimum = LireDistance(RIGHT);
   }
   delay(1000);
 
   ENCODER_ReadReset(RIGHT);
-  if(offsetDroit - angleDroit < 0)
+  if (offsetDroit - angleDroit < 0)
   {
-  MOTOR_SetSpeed(LEFT, vitesseTourner);
-  MOTOR_SetSpeed(RIGHT, -vitesseTourner);
+    MOTOR_SetSpeed(LEFT, vitesseTourner);
+    MOTOR_SetSpeed(RIGHT, -vitesseTourner);
   }
-  else 
+  else
   {
-  MOTOR_SetSpeed(LEFT, -vitesseTourner);
-  MOTOR_SetSpeed(RIGHT, vitesseTourner);
+    MOTOR_SetSpeed(LEFT, -vitesseTourner);
+    MOTOR_SetSpeed(RIGHT, vitesseTourner);
   }
-  while (fabs(ENCODER_Read(RIGHT)) < fabs((offsetDroit - angleDroit))/2)
+  while (fabs(ENCODER_Read(RIGHT)) < fabs((offsetDroit - angleDroit)) / 2)
   {
   }
   MOTOR_SetSpeed(LEFT, 0);
   MOTOR_SetSpeed(RIGHT, 0);
   delay(1000);
 
-  *angleTourne = angleTotal;
-
-  Serial.println(distanceMinimum);
+  //Serial.println(distanceMinimum);
   //Serial.println((distanceGauche + distanceDroite) / 2.0);
+  Serial.print("offsetGauche: ");
+  Serial.println(offsetGauche);
+  Serial.print("angleGauche: ");
+  Serial.println(angleGauche);
+  Serial.print("offsetDroit: ");
+  Serial.println(offsetDroit);
+  Serial.print("angleDroit: ");
+  Serial.println(angleDroit);
+  *nmbPulseTourne = offsetGauche + angleGauche + (offsetDroit - angleDroit) / 2;
   return (distanceMinimum);
 }
 
@@ -318,24 +342,24 @@ int trouverCoteBallon(int cote, int *nmbPulses, double *distanceMinimum, double 
   Serial.println("IN FUNC");
   ENCODER_ReadReset(LEFT);
   ENCODER_ReadReset(RIGHT);
-  if(cote == LEFT)
+  if (cote == LEFT)
   {
-  MOTOR_SetSpeed(LEFT, vitesseTourner);
-  MOTOR_SetSpeed(RIGHT, -vitesseTourner);
+    MOTOR_SetSpeed(LEFT, vitesseTourner);
+    MOTOR_SetSpeed(RIGHT, -vitesseTourner);
   }
   else
   {
-  MOTOR_SetSpeed(LEFT, -vitesseTourner);
-  MOTOR_SetSpeed(RIGHT, vitesseTourner);
+    MOTOR_SetSpeed(LEFT, -vitesseTourner);
+    MOTOR_SetSpeed(RIGHT, vitesseTourner);
   }
-  
-  double distanceBallon; 
+
+  double distanceBallon;
   distanceBallon = LireDistance(cote);
   while (true)
   {
     distanceBallon = LireDistance(cote);
     Serial.println("IN LOOP");
-    if((distanceBallon < *distanceMinimum) && !isnan(distanceBallon))
+    if ((distanceBallon < *distanceMinimum) && !isnan(distanceBallon))
     {
       *distanceMinimum = distanceBallon;
     }
@@ -352,7 +376,8 @@ int trouverCoteBallon(int cote, int *nmbPulses, double *distanceMinimum, double 
       Serial.println("IN LOOP IN IF");
       Serial.println(distanceBallon);
       Serial.println(distanceMinimumDetection);
-      Serial.print("Droite : "); Serial.println(distanceBallon);
+      Serial.print("Droite : ");
+      Serial.println(distanceBallon);
     }
     else
     {
@@ -363,7 +388,7 @@ int trouverCoteBallon(int cote, int *nmbPulses, double *distanceMinimum, double 
       break;
     }
     *nmbPulses = ENCODER_Read(cote);
-}
+  }
   return distanceBallon;
 }
 //Calcule l'angle le plus court que peut faire le robot en fonction de son angle initial et de la couleur qu'il veut atteindre
