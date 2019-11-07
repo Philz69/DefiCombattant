@@ -14,6 +14,7 @@ int TrouverBallon(int *angleTourne);
 void defiParcours();
 
 //void acceleration(void);
+int trouverCoteBallon(int cote, int *nmbPulses, double *distanceMinimum, double distanceMinimumDetection);
 void Mouvement(float dist);
 int Tourner(int dir, int Angle);
 float FonctionPID(float distMotDroite, float distMotGauche);
@@ -257,8 +258,9 @@ int TrouverBallon(int *angleTourne)
   double offsetDroit;
   double distanceGauche;
   double distanceDroite;
-  int distanceMinimum = 60;
-  int pause = 1;
+  int distanceMinimumDetection = 60;
+  double distanceMinimum = 180;
+  int pause = 1000;
   offsetGauche = (Tourner(-1, 45) / (59.3761011528 * 133.6734467)) * 360.0;
   delay(pause);
 
@@ -281,82 +283,92 @@ int TrouverBallon(int *angleTourne)
     angleTotal += (Tourner (1, 0.5)/(59.3761011528*133.6734467))*360;
     // delay(500);
   }*/
-  ENCODER_ReadReset(LEFT);
-  ENCODER_ReadReset(RIGHT);
-  derniereDistance = LireDistance(LEFT);
-  Serial.println(derniereDistance);
-  MOTOR_SetSpeed(LEFT, vitesseTourner);
-  MOTOR_SetSpeed(RIGHT, -vitesseTourner);
-  while (true)
-  {
-    distanceGauche = LireDistance(LEFT);
-     Serial.println(millis());
-    if (!isnan(distanceGauche) && !(distanceGauche > distanceMinimum)) // || ((derniereDistance > distanceMinimum) && ((derniereDistance - distanceGauche) < 5)))
-    {
-      //if (isnan(distanceGauche))
-      //{
-      //  derniereDistance = 90;
-      //}
-      //else
-      //{
-      //  derniereDistance = (distanceGauche);
-      //}
-      MOTOR_SetSpeed(LEFT, 0);
-      MOTOR_SetSpeed(RIGHT, 0);
-      break;
-      Serial.print("Gauche: "); Serial.println(distanceGauche);
-    }
-    else
-    {
-      //Serial.print("A trouvé coté gauche |");
-      //Serial.print(distanceGauche);
-      //MOTOR_SetSpeed(LEFT, 0);
-      //MOTOR_SetSpeed(RIGHT, 0);
-      //break;
-    }
-  }
-  Serial.println(millis());
-  angleGauche = (ENCODER_Read(LEFT) / (59.3761011528 * 133.6734467)) * 360.0;
-
-  delay(1000);
-  offsetDroit = Tourner(1, 20);
+  Tourner(1,45);
   delay(pause);
-
-  ENCODER_ReadReset(LEFT);
-  ENCODER_ReadReset(RIGHT);
-  derniereDistance = LireDistance(RIGHT);
-  MOTOR_SetSpeed(LEFT, -vitesseTourner);
-  MOTOR_SetSpeed(RIGHT, vitesseTourner);
-  distanceDroite = LireDistance(RIGHT);
-  while (true)
-  {
-    distanceDroite = LireDistance(RIGHT);
-    if (isnan(distanceDroite) || (distanceDroite > distanceMinimum)) //|| ((derniereDistance > distanceMinimum) && ((derniereDistance - distanceDroite) < 5)))
-    {
-      //if (isnan(distanceDroite))
-      //{
-      //  derniereDistance = 90;
-      //}
-      //else
-      //{
-      //  derniereDistance = (distanceDroite);
-      //}
-      Serial.print("Droite : "); Serial.println(distanceDroite);
-    }
-    else
-    {
-      Serial.print("A trouver coter droit |");
-      Serial.println(distanceDroite);
-      Serial.println(millis());
-      MOTOR_SetSpeed(LEFT, 0);
-      MOTOR_SetSpeed(RIGHT, 0);
-      break;
-    }
-  }
-  Serial.println(millis());
+  trouverCoteBallon(LEFT, &angleGauche, &distanceMinimum, distanceMinimumDetection);
   delay(pause);
-  //angleDroit = ((ENCODER_Read(RIGHT) / (59.3761011528 * 133.6734467)) * 360.0);
-  angleDroit = ENCODER_Read(RIGHT);
+  Tourner(-1, 45);
+  delay(pause);
+  trouverCoteBallon(RIGHT, &angleDroit, &distanceMinimum, distanceMinimumDetection);
+  //ENCODER_ReadReset(LEFT);
+  //ENCODER_ReadReset(RIGHT);
+  //derniereDistance = LireDistance(LEFT);
+  //Serial.println(derniereDistance);
+  //MOTOR_SetSpeed(LEFT, vitesseTourner);
+  //MOTOR_SetSpeed(RIGHT, -vitesseTourner);
+  //while (true)
+  //{
+  //  distanceGauche = LireDistance(LEFT);
+  //  if((distanceGauche < distanceMinimum) && !isnan(distanceGauche))
+  //  {
+  //    distanceMinimum = distanceGauche;
+  //  }
+  //  if (isnan(distanceGauche) || (distanceGauche > distanceMinimumDetection)) // || ((derniereDistance > distanceMinimum) && ((derniereDistance - distanceGauche) < 5)))
+  //  {
+  //    //if (isnan(distanceGauche))
+  //    //{
+  //    //  derniereDistance = 90;
+  //    //}
+  //    //else
+  //    //{
+  //    //  derniereDistance = (distanceGauche);
+  //    //}
+  //    Serial.print("Gauche |"); Serial.println(distanceGauche);
+  //  }
+  //  else
+  //  {
+  //    Serial.print("A trouvé coté gauche |");
+  //    Serial.print(distanceGauche);
+  //    MOTOR_SetSpeed(LEFT, 0);
+  //    MOTOR_SetSpeed(RIGHT, 0);
+  //    break;
+  //  }
+  //}
+  //angleGauche = (ENCODER_Read(LEFT) / (59.3761011528 * 133.6734467)) * 360.0;
+  
+  //Serial.println("TOURNE A GAUCHE DROITE");
+  //delay(pause);
+  //offsetDroit = Tourner(1, 45);
+  //delay(pause);
+  //Serial.println("JESPERE YA TOURNER A DROITE");
+
+  //ENCODER_ReadReset(LEFT);
+  //ENCODER_ReadReset(RIGHT);
+  //derniereDistance = LireDistance(RIGHT);
+  //MOTOR_SetSpeed(LEFT, -vitesseTourner);
+  //MOTOR_SetSpeed(RIGHT, vitesseTourner);
+  //distanceDroite = LireDistance(RIGHT);
+  //while (true)
+  //{
+  //  distanceDroite = LireDistance(RIGHT);
+  //  if((distanceDroite < distanceMinimum) && !isnan(distanceDroite))
+  //  {
+  //    distanceMinimum = distanceDroite;
+  //  }
+  //  if (isnan(distanceDroite) || (distanceDroite > distanceMinimumDetection)) //|| ((derniereDistance > distanceMinimum) && ((derniereDistance - distanceDroite) < 5)))
+  //  {
+  //    //if (isnan(distanceDroite))
+  //    //{
+  //    //  derniereDistance = 90;
+  //    //}
+  //    //else
+  //    //{
+  //    //  derniereDistance = (distanceDroite);
+  //    //}
+  //    Serial.print("Droite : "); Serial.println(distanceDroite);
+  //  }
+  //  else
+  //  {
+  //    Serial.print("A trouver coter droit |");
+  //    Serial.println(distanceDroite);
+  //    MOTOR_SetSpeed(LEFT, 0);
+  //    MOTOR_SetSpeed(RIGHT, 0);
+  //    break;
+  //  }
+  //}
+  //delay(pause);
+  ////angleDroit = ((ENCODER_Read(RIGHT) / (59.3761011528 * 133.6734467)) * 360.0);
+  //angleDroit = ENCODER_Read(RIGHT);
   delay(1000);
   ENCODER_ReadReset(RIGHT);
   MOTOR_SetSpeed(LEFT, -vitesseTourner);
@@ -370,10 +382,59 @@ int TrouverBallon(int *angleTourne)
 
   *angleTourne = angleTotal;
 
-  Serial.println((distanceGauche + distanceDroite) / 2.0);
-  return ((distanceGauche + distanceDroite) / 2.0);
+  Serial.println(distanceMinimumDetection);
+  //Serial.println((distanceGauche + distanceDroite) / 2.0);
+  return (distanceMinimumDetection);
 }
 
+int trouverCoteBallon(int cote, int *nmbPulses, double *distanceMinimum, double distanceMinimumDetection)
+{
+  ENCODER_ReadReset(LEFT);
+  ENCODER_ReadReset(RIGHT);
+  if(cote == LEFT)
+  {
+  MOTOR_SetSpeed(LEFT, -vitesseTourner);
+  MOTOR_SetSpeed(RIGHT, vitesseTourner);
+  }
+  else
+  {
+  MOTOR_SetSpeed(LEFT, vitesseTourner);
+  MOTOR_SetSpeed(RIGHT, -vitesseTourner);
+  }
+  
+  double distanceBallon; 
+  distanceBallon = LireDistance(cote);
+  while (true)
+  {
+    distanceBallon = LireDistance(cote);
+    if((distanceBallon < *distanceMinimum) && !isnan(distanceBallon))
+    {
+      *distanceMinimum = distanceBallon;
+    }
+    if (isnan(distanceBallon) || (distanceBallon > distanceMinimumDetection)) //|| ((derniereDistance > distanceMinimum) && ((derniereDistance - distanceDroite) < 5)))
+    {
+      //if (isnan(distanceDroite))
+      //{
+      //  derniereDistance = 90;
+      //}
+      //else
+      //{
+      //  derniereDistance = (distanceDroite);
+      //}
+      Serial.print("Droite : "); Serial.println(distanceBallon);
+    }
+    else
+    {
+      Serial.print("A trouver coter droit |");
+      Serial.println(distanceBallon);
+      MOTOR_SetSpeed(LEFT, 0);
+      MOTOR_SetSpeed(RIGHT, 0);
+      break;
+    }
+    *nmbPulses = ENCODER_Read(cote);
+  return distanceBallon;
+}
+}
 //Calcule l'angle le plus court que peut faire le robot en fonction de son angle initial et de la couleur qu'il veut atteindre
 int CalculerAngleDepart(int *sensAngle, int angleInitial, int couleur)
 {
