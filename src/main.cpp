@@ -167,8 +167,7 @@ void loop()
 
       //3. Avancer jusquau centre
       facteurAcceleration = 0.1; //Descendre la vitesse du premier mouvement
-      Mouvement(distanceBallon - 5);
-
+      Mouvement(distanceBallon + 10);
       //3. Monter les fourches
       SERVO_SetAngle(0, 120);
       delay(1000);
@@ -309,9 +308,9 @@ int TrouverBallon(int *angleTourne)
 
   *angleTourne = angleTotal;
 
-  Serial.println(distanceMinimumDetection);
+  Serial.println(distanceMinimum);
   //Serial.println((distanceGauche + distanceDroite) / 2.0);
-  return (distanceMinimumDetection);
+  return (distanceMinimum);
 }
 
 int trouverCoteBallon(int cote, int *nmbPulses, double *distanceMinimum, double distanceMinimumDetection)
