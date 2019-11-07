@@ -32,8 +32,9 @@ float FonctionPID(float distMotDroite, float distMotGauche);
 #define JAUNE 3
 #define NOIR 4
 
-#define ANGLE_ROUGE 45
-#define ANGLE_VERT 130.5
+#define ANGLE_ROUGE 46
+
+#define ANGLE_VERT 132
 #define ANGLE_BLEU 222
 #define ANGLE_JAUNE 315
 
@@ -94,9 +95,9 @@ void loop()
   // put your main code here, to run repeatedly:
   if (ROBUS_IsBumper(3))
   {
-    int angleInitial = ANGLE_INITIAL_ROBOT_A;
+    int angleInitial = ANGLE_INITIAL_ROBOT_B;
     int couleurAAtteindre = ROUGE;
-    int couleur2 = JAUNE;
+    int couleur2 = BLEU;
     if (angleInitial == ANGLE_INITIAL_ROBOT_A)
     {
       //1. Monter les fourches
@@ -117,12 +118,16 @@ void loop()
       Mouvement(DISTANCE_CENTRE_BALLON - 20);
 
       //5. Descendre les fourches
-      SERVO_SetAngle(0, 0);
+      SERVO_SetAngle(0, 30);
       delay(1000);
 
       //6. Se rendre jusquau ballon
       facteurAcceleration = 0.2;
       if(couleurAAtteindre == VERT)
+      {
+        Mouvement(3);
+      }
+      if(couleurAAtteindre == ROUGE)
       {
         Mouvement(3);
       }
@@ -133,14 +138,32 @@ void loop()
       delay(1000);
 
       //8.
+      if(couleurAAtteindre == VERT)
+      {
+      Tourner(1,178);
+      }
+      else if(couleurAAtteindre == ROUGE)
+      {
+      Tourner(1,182);
+      }
+      else
+      {
       Tourner(1, 180);
-
+      }
+      if(couleurAAtteindre == VERT)
+      {
+        Mouvement(3);
+      }
+      if(couleurAAtteindre == ROUGE)
+      {
+        Mouvement(3);
+      }
       //9. Retourner au centre
       facteurAcceleration = 0.8;
       Mouvement(DISTANCE_CENTRE_BALLON - RAYON_CERLCE_CENTRE - 10);
 
       //10. Deposer ballon
-      SERVO_SetAngle(0, 0);
+      SERVO_SetAngle(0, 30);
       delay(1000);
 
       //11.
@@ -212,13 +235,18 @@ void loop()
       int angleDepart = CalculerAngleDepart(&sensAngleDepart, angleInitial, couleur2);
       Tourner(sensAngleDepart, angleDepart);
 
-      //5. Sortir du cercle
+      //5. Aller porter le ballon
       facteurAcceleration = 0.8;
       Mouvement(DISTANCE_CENTRE_BALLON);
 
+
       //3. dROP les fourches
-      SERVO_SetAngle(0, 0);
+      SERVO_SetAngle(0, 30);
       delay(1000);
+
+
+      //6. Avancer pour etre certain datteindre le but 
+      Mouvement(10);
     }
   }
   // if(ROBUS_IsBumper(2))
